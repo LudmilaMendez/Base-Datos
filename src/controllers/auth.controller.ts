@@ -19,10 +19,12 @@ export const register = async (req: Request, res: Response) => {
 
         return res.status(201).json({ message: 'Usuario creado exitosamente' });
     } catch (error: any) {
+        console.error(error);
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ error: 'El usuario o email ya existe' }); //PRIMER ERROR
         }
-        return res.status(500).json({ error: 'Error al registrar el usuario' });  //SEGUNDO ERROR
+        console.error(error);
+        return res.status(500).json({ error: 'Error al registrar el usuario' }); //SEGUNDO ERROR
     }
 };
 
@@ -39,6 +41,7 @@ export const login = async (req: Request, res: Response) => {
 
         return res.json({ token });
     } catch (error: any) {
+        console.error('Error en login:', error);;
         if (error.message === 'Credenciales inválidas') {
             return res.status(401).json({ error: error.message }); //osea "Credenciales Invalidas"
         }
