@@ -1,24 +1,47 @@
 import { Request, Response } from 'express';
-import * as productService from '../services/auth.service';
-import { CreateProductDTO } from '../models/users.model';
+import * as authService from '../services/auth.service';
+import { validationResult } from 'express-validator';
 
-export const showDashboard = async (req: Request, res: Response) => {
-    const products = await productService.listProducts();
-    res.render('products', { products });
+
+//!  ACA VAMOS A CONTROLAR AL SERVICE Y AL MODEL
+//!  HACEMOS LAS CAPTURAS DE ERRORES Y LAS VALIDACIONES 
+
+export const register = async (req: Request, res: Response) => {
+    try {
+        // Verificar errores de validación  //?PRIMERA CAPA DE SEGURIDAD
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { username, email, password } = req.body;
+        await authService.register(username, email, password);
+
+        return res.status(201).json({ message: 'Usuario creado exitosamente' });
+    } catch (error: any) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ error: 'El usuario o email ya existe' }); //PRIMER ERROR
+        }
+        return res.status(500).json({ error: 'Error al registrar el usuario' });  //SEGUNDO ERROR
+    }
 };
 
-export const createProduct = async (req: Request, res: Response) => {
-    const { name, price, quantity, category_id } = req.body;
+export const login = async (req: Request, res: Response) => {
+    try {
+        // Verificar errores de validación
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-    const newProduct: CreateProductDTO = {
-        name,
-        price: Number(price),
-        quantity: Number(quantity),
-        category_id: Number(category_id),
-    };
+        const { email, password } = req.body;    //!COSAS QUE NECESITO PARA LOGUEARME
+        const token = await authService.login(email, password);
 
-    await productService.addProduct(newProduct);
-    res
-        .status(201)
-        .json({ success: true, message: 'Producto creado correctamente' });
+        return res.json({ token });
+    } catch (error: any) {
+        if (error.message === 'Credenciales inválidas') {
+            return res.status(401).json({ error: error.message }); //osea "Credenciales Invalidas"
+        }
+        return res.status(500).json({ error: 'Error al iniciar sesión' });
+    }
 };

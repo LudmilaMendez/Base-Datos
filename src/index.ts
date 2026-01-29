@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
 import path from "path";
-import productsRouter from './routes/auth.route';
 
 import 'dotenv/config';
+import authRoutes from './routes/auth.route'; 
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -14,16 +14,20 @@ app.use(express.json());
 // __dirname representa la carpeta actual compilada
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-app.use('/products', productsRouter);
+
 
 //Usando Metodo GET
 app.get("/", (req: Request, res: Response) => {
     res.json({ message: "¡Hola, mundo! Servidor Express con TypeScript funcionando." });
 });
 
+app.use('/auth', authRoutes); //!ESTO ES LO UNICO QUE AGREGAMOS PARA CONEXION A BD, AHORA HAY QUE IMPORTAR AUTHROUTES ARRIBA
+
+
 app.get("/saludo", (req: Request, res: Response) => {
     res.json({ message: "¡Hola, mundo! Esta es la Pag de Saludo" });
 });
+
 
 //Consumiendo el puerto
 app.listen(PORT, () => {

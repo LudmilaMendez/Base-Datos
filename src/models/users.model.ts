@@ -1,37 +1,39 @@
 import pool from '../database/mysql';
+import { RowDataPacket } from 'mysql2';
+import { UserRole } from '../types/auth';
 
-// Representa un producto tal como vive en la base de datos
-export interface Product {
-    id: number;
-    name: string;
-    price: number;
-    quantity: number;
-    category: string;
+export interface User { //Esto lo definimos porque TS y MySQL no se llevan bien
+    id: number;                        //?NO SE PASA NI ESTO
+    username: string;
+    email: string;
+    password: string;
+    role: UserRole; // user o admin            //?NI ESTO    
 }
+                                      //?GRACIAS AL OMIT EN CREATEUSER
 
-// Datos necesarios para crear un producto
-export interface CreateProductDTO {
-    name: string;
-    price: number;
-    quantity: number;
-    category_id: number;
-}
+export type UserRow = User & RowDataPacket; // Extiende User con RowDataPacket para compatibilidad con MySQL
 
-export const getAllProducts = async (): Promise<Product[]> => {
-    const [rows] = await pool.query<Product[]>(`
-    SELECT p.id, p.name, p.price, p.quantity, c.name AS category
-    FROM products p
-    JOIN categories c ON p.category_id = c.id
-`);
+export const findUser = async (
+    email: string = '',
+    username: string = ''
+): Promise<User | null> => {
+    const [rows] = await pool.query<UserRow[]>( //*SELECCIONA TODO LO RELACIONADO (toda la fila o row) CON EL USUARIO, USERNAME O EMAIL
+        'SELECT u.*, r.name as role FROM users u LEFT JOIN user_roles ur ON u.id = ur.user_id LEFT JOIN roles r ON ur.role_id = r.id WHERE u.email = ? OR u.username = ? LIMIT 1',
+        [email, username]
+    );
 
-    return rows;
+    return rows.length ? rows[0] : null;
 };
 
-export const createProduct = async (data: CreateProductDTO): Promise<void> => {
-    const { name, price, quantity, category_id } = data;
-
-    await pool.query(
-        'INSERT INTO products (name, price, quantity, category_id) VALUES (?, ?, ?, ?)',
-        [name, price, quantity, category_id]
+export const createUser = async ( 
+    user: Omit<User, 'id' | 'role'>           //?NO SE PASA NI EL ID NI EL ROL
+): Promise<number> => {
+    const [userResult] = await pool.query(                                //SE PASA CUANTOS ? COMO VALORES HAY
+        'INSERT INTO users (username, email, password) VALUES (?, ?, ?)', //NO SE PASA EL ROL PORQUE POR DEFECTO ES USER Y LA PASSWORD NO ESTA ENCRIPTADA
+        [user.username, user.email, user.password]
     );
+
+    console.log('User result:', userResult);
+
+    return (userResult as any).insertId;
 };
