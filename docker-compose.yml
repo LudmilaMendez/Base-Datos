@@ -5,10 +5,10 @@ services:
     container_name: curso_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: curso_backend
+      MYSQL_ROOT_PASSWORD: mysqlutun
+      MYSQL_DATABASE: Backend
       MYSQL_USER: curso_user
-      MYSQL_PASSWORD: curso123
+      MYSQL_PASSWORD: mysqlutn
     ports:
       - '3307:3306'
     volumes:
@@ -40,8 +40,8 @@ services:
       PMA_HOST: mysql
       PMA_PORT: 3306
       PMA_USER: root
-      PMA_PASSWORD: root123
-      MYSQL_ROOT_PASSWORD: root123
+      PMA_PASSWORD: mysqlutn
+      MYSQL_ROOT_PASSWORD: mysqlutn
     ports:
       - '8080:80'
     depends_on:

@@ -56,7 +56,7 @@ export const login = async (
      */
     const options: SignOptions = {
         expiresIn: (process.env.JWT_EXPIRES_IN as any) || '1h',
-        issuer: 'curso-utn-backend',
+        issuer: 'Backend',
     };
 
     /**
