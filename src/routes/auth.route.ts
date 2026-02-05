@@ -4,7 +4,7 @@ import {
     registerValidator,
     loginValidator,   //!DEFINIDOS AMBOS EN AUTH.VALIDATOR.TS
 } from '../validators/auth.validator';
-import rateLimit from 'express-rate-limit';
+//import rateLimit from 'express-rate-limit';
 
 const router = Router();
 //!  AUTHLIMITER SE USA PARA ACLARAR CUANTAS VECES PUEDO EJECUTAR UNA PETICION HTTP

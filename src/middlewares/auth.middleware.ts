@@ -5,20 +5,11 @@ import { IUser } from '../types/Iuser';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
-interface UserPayload {
-    id: number;
-    username: string;
-    role: 'user' | 'admin';
-}
-
-interface AuthRequest extends Request {
-    user?: UserPayload;
-}
+//! Middleware de autenticación
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
     // 1. Extraer el token del encabezado
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(' ')[1]; 
+    const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
         return res.status(401).json({ message: 'No se proporcionó un token' });
@@ -29,9 +20,8 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
         if (err) {
             return res.status(403).json({ message: 'Token inválido o expirado' });
         }
-        
-        // 3. Inyectar el usuario en la petición (Casting limpio)
-        (req as AuthRequest).user = decoded as UserPayload;
+        // 3. Adjuntar la información del usuario al request
+        req.user = decoded as JwtPayload; 
         next();
     });
 };
@@ -40,10 +30,8 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 
 export const authorize = (rolesPermitidos: Array<'user' | 'admin'>) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        const { user } = req as AuthRequest; // Sacamos al usuario del request
-
         // Verificamos si existe el usuario y si su rol está en la lista permitida
-        if (!user || !rolesPermitidos.includes(user.role)) {
+        if (!req.user || !rolesPermitidos.includes(req.user.role)) {
             return res.status(403).json({ 
                 message: `Acceso denegado. Se requiere uno de estos roles: ${rolesPermitidos.join(', ')}` 
             });

@@ -5,7 +5,10 @@ export interface JwtPayload { //jwsonwebtoken personalizado
     role: UserRole;
 }
 
-export enum UserRole {
-    USER = 'user',
-    ADMIN = 'admin',
+export type UserRole = 'user' | 'admin';
+
+export interface JwtPayload {
+    id: number;
+    username: string;
+    role: UserRole;
 }
